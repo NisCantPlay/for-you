@@ -42,8 +42,11 @@
     user-select:none;
   }
   @keyframes fall{
-    0%{ transform:translateY(0) translateX(0) rotate(0deg); }
-    100%{ transform:translateY(110vh) translateX(20px) rotate(360deg); }
+    0%{ transform:translateY(0) translateX(0) rotate(-8deg); }
+    25%{ transform:translateY(27vh) translateX(14px) rotate(8deg); }
+    50%{ transform:translateY(55vh) translateX(-10px) rotate(-6deg); }
+    75%{ transform:translateY(82vh) translateX(12px) rotate(10deg); }
+    100%{ transform:translateY(110vh) translateX(0) rotate(-4deg); }
   }
 
   /* ---------- ENVELOPE SCENE ---------- */
@@ -76,15 +79,14 @@
   .envelope{
     width:280px; height:190px; position:relative; cursor:pointer;
     filter:drop-shadow(0 12px 24px rgba(201,107,138,0.35));
+    perspective:800px;
+    overflow:hidden;           /* keep the flap/letter contained while closed */
+    border-radius:6px;
+    transition: transform 0.3s ease;
   }
-
-  /* z0: dark backside of the flap, visible briefly through the gap as it opens */
-  .envelope-shadow-flap{
-    position:absolute; top:0; left:0; width:0; height:0;
-    border-left:140px solid transparent;
-    border-right:140px solid transparent;
-    border-top:95px solid #d98cab;
-    z-index:0;
+  .envelope.open{ overflow:visible; }  /* let the letter rise out once opening starts */
+  @media (hover:hover) and (pointer:fine){
+    .envelope:hover{ transform:translateY(-3px); }
   }
 
   /* z1: the letter, sitting fully behind the opaque back panel at rest -
@@ -126,18 +128,23 @@
     z-index:3;
   }
 
-  /* z4: the flap that opens */
+  /* z4: the flap that opens - real 3D fold via perspective on the parent */
   .envelope-flap{
     position:absolute; top:0; left:0; width:100%; height:0;
     border-left:140px solid transparent;
     border-right:140px solid transparent;
     border-top:95px solid var(--rose);
     transform-origin:top;
-    transition:transform 0.9s cubic-bezier(.6,-0.28,.5,1.4);
+    transition: transform 0.6s cubic-bezier(.22,1,.36,1),
+                opacity 0.25s ease 0.32s;
     z-index:4;
+    backface-visibility:hidden;
+    -webkit-backface-visibility:hidden;
+    will-change:transform;
   }
   .envelope.open .envelope-flap{
-    transform:rotateX(180deg);
+    transform:rotateX(-115deg);
+    opacity:0;
   }
 
   /* z5: wax seal */
@@ -148,7 +155,7 @@
     display:flex; align-items:center; justify-content:center;
     font-size:1.3rem; z-index:5; color:#fff;
     box-shadow:0 4px 10px rgba(0,0,0,0.2);
-    transition: transform 0.4s ease, opacity 0.4s ease;
+    transition: transform 0.3s ease, opacity 0.3s ease;
   }
   .envelope.open .seal{ transform:translate(-50%,0) scale(0); opacity:0; }
 
@@ -184,7 +191,7 @@
     font-size:1.7rem; color:var(--deep-rose); margin-bottom:14px; font-weight:600;
   }
   .love-note p{
-    font-size:1.05rem; line-height:1.75; color:#5c4152;
+    font-size:1.05rem; line-height:1.75; color:#5c4152; white-space:pre-line;
   }
 
   /* ---------- FINALE ---------- */
@@ -223,8 +230,8 @@
   }
   #celebration.shown{ display:block; animation: pop 0.6s ease; }
   @keyframes pop{ 0%{ transform:scale(0.7); opacity:0; } 100%{ transform:scale(1); opacity:1; } }
-  #celebration h1{ font-size:2.6rem; color:var(--deep-rose); }
-  #celebration p{ margin-top:10px; font-size:1.05rem; color:#8a6577; }
+  #celebration h1{ font-size:2.4rem; color:var(--deep-rose); }
+  #celebration p{ margin-top:10px; font-size:1.05rem; color:#8a6577; line-height:1.6; }
 
   @media (prefers-reduced-motion: reduce){
     .petal, .tap-hint{ animation:none !important; }
@@ -234,8 +241,7 @@
   @media (max-width:420px){
     .envelope{ width:230px; height:160px; }
     .envelope-flap{ border-left-width:115px; border-right-width:115px; border-top-width:80px; }
-    .envelope-shadow-flap{ border-left-width:115px; border-right-width:115px; border-top-width:80px; }
-    .letter-peek{ height:104px; transition-delay:0.3s; }
+    .letter-peek{ height:104px; }
     .envelope.open .letter-peek{ transform:translateY(-125px) rotate(-1.5deg); }
     .love-note{ padding:30px 22px; }
   }
@@ -249,7 +255,6 @@
 <section id="envelope-scene">
   <p class="prompt-text">a little something for you...</p>
   <div class="envelope" id="envelope" onclick="openEnvelope()">
-    <div class="envelope-shadow-flap"></div>
     <div class="envelope-back"></div>
     <div class="letter-peek"></div>
     <div class="envelope-pocket"></div>
@@ -265,45 +270,36 @@
   <div class="love-note">
     <span class="flower">🌸</span>
     <h2>Dear Deren,</h2>
-    <p>
-     I am very thankful that we met. I already knew you were one of the sweetest and most caring girl when you helped me out with... you know what ^^ 
-    </p>
+    <p>I am very thankful that we met. I already knew you were one of the sweetest and most caring girl when you helped me out with... you know what ^^</p>
   </div>
 
   <div class="love-note">
-    <span class="flower">🦋</span>
+    <span class="flower">🤍</span>
     <h2>What I like about you</h2>
-    <p>
-      I admire how joyful and cute you are. Even when you're having a hard time yourself, you're always thinking about others. I really appreciate the way you always included me and made me feel seen. 
+    <p>I admire how joyful and cute you are. Even when you're having a hard time yourself, you're always thinking about others. I really appreciate the way you always included me and made me feel seen.
 
 I love your laugh whenever you see something funny, and i admire how patient you are, whenever i struggle to explain something you wait.
-I love the way you talk about the things you’re passionate about and how your voice lights up when you do. I love how you can suddenly become concerned about the smallest things because it shows how much you care.
-    </p>
+I love the way you talk about the things you're passionate about and how your voice lights up when you do. I love how you can suddenly become concerned about the smallest things because it shows how much you care.</p>
   </div>
 
   <div class="love-note">
     <span class="flower">⭐</span>
     <h2>A moment I won't forget</h2>
-    <p>
-      The first time we called. I was very nervous, But I loved streaming life is strange for you. 
-      I still remember when you fell asleep during the call. I didn't know what to do, so I called your name a couple of times which actually took quite a bit of courage for me. I even felt bad about leaving the call while you were sleeping. Hahaha
-    </p>
+    <p>The first time we called. I was very nervous, But I loved streaming life is strange for you.
+I still remember when you fell asleep during the call. I didn't know what to do, so I called your name a couple of times which actually took quite a bit of courage for me. I even felt bad about leaving the call while you were sleeping. Hahaha</p>
   </div>
 
   <div class="love-note">
     <span class="flower">💕</span>
     <h2>So, here's the thing...</h2>
-    <p>
-      I love you very much, and I am very serious about this. and I am so thankful to have you in my life and honestly, 
-      I wouldn't want it any other way... sooooo
-
-    </p>
+    <p>I love you very much, and I am very serious about this. and I am so thankful to have you in my life and honestly,
+I wouldn't want it any other way... sooooo</p>
   </div>
 
   <div id="finale">
-    <div class="flower">🌷🦋🌷</div>
+    <div class="flower">🌷🤍🌷</div>
     <h1>Will you be my girlfriend?</h1>
-    <p class="sub">so erm ! </p>
+    <p class="sub">so erm !</p>
 
     <div class="btn-row" id="btn-row">
       <button class="btn" id="yes-btn" onclick="sayYes()">Yes 💗</button>
@@ -315,10 +311,8 @@ I love the way you talk about the things you’re passionate about and how your 
     </div>
 
     <div id="celebration">
-      <h1>YAAAAAAAAAAA
-        I love you lots of lotss
-      </h1>
-    
+      <h1>YAAAAAAAAAAA</h1>
+      <p>I love you lots of lotss<br>I'm very grateful</p>
     </div>
   </div>
 
@@ -326,7 +320,7 @@ I love the way you talk about the things you’re passionate about and how your 
 
 <script>
   // ---- floating petals ----
-  const emojis = ['🌸','💮','🌷','🦋','✨','💕'];
+  const emojis = ['🌸','💮','🌷','💐','✨','💕'];
   const field = document.getElementById('petal-field');
   for(let i=0;i<22;i++){
     const p = document.createElement('span');
@@ -355,7 +349,7 @@ I love the way you talk about the things you’re passionate about and how your 
       document.querySelectorAll('.love-note')[0].classList.add('shown');
       // remove the scene from layout only after it's fully faded, so there's no jump
       setTimeout(()=>{ scene.classList.add('collapsed'); }, 750);
-    }, 1300);
+    }, 1100);
   }
 
   // little sparkle burst centered on a given element
@@ -424,7 +418,7 @@ I love the way you talk about the things you’re passionate about and how your 
     for(let i=0;i<30;i++){
       const p = document.createElement('span');
       p.className='petal';
-      p.textContent = ['💗','🌸','✨','🦋'][Math.floor(Math.random()*4)];
+      p.textContent = ['💗','🌸','✨','💐'][Math.floor(Math.random()*4)];
       p.style.left = Math.random()*100+'vw';
       p.style.top = '40vh';
       p.style.animationDuration = (3+Math.random()*4)+'s';
